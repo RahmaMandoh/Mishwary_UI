@@ -39,28 +39,20 @@
       if (e.isIntersecting) { e.target.classList.add('is-visible'); revealer.unobserve(e.target); }
     });
   }, { threshold: 0.12 });
-  $$('.reveal').forEach((el) => {
+  // ?static shows everything immediately (handy for full-page screenshots)
+  const params = new URLSearchParams(location.search);
+  if (params.has('static')) {
+    $$('.reveal').forEach((el) => el.classList.add('is-visible'));
+    // ?static&only=<section id> shows just that section (for screenshots)
+    const only = params.get('only');
+    if (only) $$('main > section').forEach((s) => { if (s.id !== only) s.hidden = true; });
+  }
+  $$('.reveal:not(.is-visible)').forEach((el) => {
     // stagger siblings in the same grid
     const sibs = $$(':scope > .reveal', el.parentElement);
     el.style.transitionDelay = `${Math.max(0, sibs.indexOf(el)) * 90}ms`;
     revealer.observe(el);
   });
-
-  /* ---------- Hero phones: mouse parallax ---------- */
-  const hero = $('.hero');
-  const phones = $$('.hero__phone');
-  if (!reduceMotion && window.matchMedia('(pointer: fine)').matches) {
-    hero.addEventListener('pointermove', (e) => {
-      const r = hero.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      phones.forEach((p, i) => {
-        const d = i ? 26 : 14;
-        p.style.transform = `translate(${x * d}px, ${y * d}px) rotateY(${x * 8}deg) rotateX(${-y * 6}deg)`;
-      });
-    });
-    hero.addEventListener('pointerleave', () => phones.forEach((p) => (p.style.transform = '')));
-  }
 
   /* ---------- Card spotlight follows the cursor ---------- */
   $$('.card').forEach((card) => {

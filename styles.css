@@ -23,7 +23,8 @@ body {
   margin: 0;
   font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   color: var(--text);
-  background: #0c0c0c;
+  /* One continuous background for the whole page, so sections have no visible seams */
+  background: #0c0c0c var(--grad-bg);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -38,10 +39,19 @@ button { font: inherit; cursor: pointer; }
 .h-lg { font-weight: 700; font-size: clamp(30px, 2.7vw + 4px, 52px); line-height: 1.21; }
 .lead { font-weight: 500; font-size: clamp(16px, 1.15vw, 22px); line-height: 1.64; }
 .lead--sm { font-size: clamp(15px, 1vw, 19px); }
+/* Colored words in titles: the brand gradient slides across the letters with a light shimmer,
+   and a soft purple glow pulses behind them */
 .grad-text {
-  background: var(--grad-brand);
+  background: linear-gradient(90deg, #4a1078 0%, #a333f9 30%, #e2b8ff 50%, #a333f9 70%, #4a1078 100%);
+  background-size: 200% 100%;
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
+  animation: grad-shimmer 5s linear infinite, grad-glow 3.2s ease-in-out infinite;
+}
+@keyframes grad-shimmer { from { background-position: 200% 0; } to { background-position: 0% 0; } }
+@keyframes grad-glow {
+  0%,100% { filter: drop-shadow(0 0 0 rgba(163, 51, 249, 0)); }
+  50%     { filter: drop-shadow(0 0 14px rgba(163, 51, 249, .55)); }
 }
 
 /* ============ Buttons ============ */
@@ -52,8 +62,15 @@ button { font: inherit; cursor: pointer; }
   background: none; text-decoration: none;
   transition: transform .25s var(--ease), box-shadow .25s var(--ease), background-color .25s, color .25s;
 }
-.btn--primary { background: var(--grad-brand); box-shadow: 4px 4px 12px var(--purple-shadow); }
-.btn--primary:hover { transform: translateY(-2px); box-shadow: 4px 8px 28px var(--purple-shadow); }
+/* Gradient starts from the border edge (no repeated sliver on the sides), a lighter dark end so the
+   left edge doesn't melt into the background, a thin light rim and an even glow all around */
+.btn--primary {
+  background: linear-gradient(270deg, #a333f9 0%, #5e1596 100%);
+  background-origin: border-box;
+  border-color: rgba(214, 160, 255, .35);
+  box-shadow: 0 6px 22px rgba(163, 51, 249, .45), inset 0 1px 0 rgba(255, 255, 255, .18);
+}
+.btn--primary:hover { transform: translateY(-2px); border-color: rgba(214, 160, 255, .6); box-shadow: 0 10px 32px rgba(163, 51, 249, .6), inset 0 1px 0 rgba(255, 255, 255, .22); }
 .btn--ghost { border-color: #fff; }
 .btn--ghost:hover { background: #fff; color: #111; transform: translateY(-2px); }
 .btn:active { transform: translateY(0) scale(.98); }
@@ -82,7 +99,9 @@ button { font: inherit; cursor: pointer; }
 .nav__toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-10px) rotate(-45deg); }
 
 /* ============ Sections ============ */
-section { position: relative; background: var(--grad-bg); overflow: hidden; }
+section { position: relative; overflow: hidden; }
+/* M2's ring glow is allowed to spill softly into M3 instead of being cut at the section edge */
+.platform { overflow: visible; z-index: 1; }
 .section { padding-block: clamp(72px, 6.25vw, 120px); }
 .section__head { max-width: 1106px; margin-inline: auto; text-align: center; display: flex; flex-direction: column; gap: 24px; }
 
@@ -96,21 +115,99 @@ section { position: relative; background: var(--grad-bg); overflow: hidden; }
 .blob { position: absolute; border-radius: 50%; pointer-events: none; background: radial-gradient(closest-side, rgba(163,51,249,.45), rgba(163,51,249,0)); filter: blur(20px); }
 
 /* ============ M1 Hero ============ */
-.hero { min-height: clamp(720px, 100svh, 1080px); display: flex; align-items: center; padding-top: var(--nav-h); }
-.hero__glow { position: absolute; inset: 0; pointer-events: none; }
-.ring--hero { width: 900px; height: 900px; right: -230px; top: -180px; border-width: 5px; opacity: .9; }
-.blob--1 { width: 900px; height: 900px; right: -200px; top: 200px; }
-.blob--2 { width: 700px; height: 700px; right: 300px; top: -300px; opacity: .5; }
-.hero__grid { display: grid; grid-template-columns: minmax(0, 963fr) minmax(0, 600fr); align-items: center; gap: 40px; }
-.hero__copy { display: flex; flex-direction: column; gap: 64px; }
-.hero__copy > .lead { margin-top: -24px; }
-.hero__copy .h-xl { margin-bottom: 0; }
-.hero__actions { display: flex; gap: 40px; flex-wrap: wrap; }
-.hero__actions--center { justify-content: center; margin-top: 16px; }
-.hero__phones { position: relative; height: clamp(420px, 46vw, 900px); transform-style: preserve-3d; }
-.hero__phone { position: absolute; width: clamp(150px, 14.8vw, 284px); height: auto; filter: drop-shadow(0 30px 60px rgba(0,0,0,.6)); transition: transform .4s var(--ease); }
-.hero__phone--back { left: 8%; top: 0; }
-.hero__phone--front { left: 46%; top: 17%; }
+/* The hero is the Figma 1920×1080 frame scaled as one unit, so it always fits
+   inside the screen. Everything inside is sized in container units (cqw). */
+.hero {
+  --hero-pad-top: var(--nav-h);
+  --hero-pad-bottom: clamp(24px, 4vh, 48px);
+  padding: var(--hero-pad-top) 0 var(--hero-pad-bottom);
+}
+/* Full width = Figma's 1920 frame scaled to the screen width (true design size).
+   Like the Figma frame, it clips Frame 239: only the part inside the frame shows.
+   The top is allowed to run up under the transparent nav, and the bottom edge fades out. */
+.hero__stage {
+  container-type: inline-size;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1920 / 1080;
+}
+/* Clipping window = the Figma frame (plus the strip under the nav), bottom edge fades out */
+.hero__clip {
+  position: absolute; left: 0; right: 0; bottom: 0; top: calc(-1 * var(--nav-h));
+  overflow: hidden; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 90%, transparent);
+          mask-image: linear-gradient(to bottom, #000 90%, transparent);
+}
+
+/* Frame 239 (1568×1597 at x579 y-259), sized in cqw (1cqw = 19.2 design px) */
+.hero__art {
+  position: absolute; pointer-events: none;
+  left: calc(579 / 19.2 * 1cqw); top: calc(var(--nav-h) - 259 / 19.2 * 1cqw);
+  width: calc(1568 / 19.2 * 1cqw); height: calc(1597 / 19.2 * 1cqw);
+}
+.glow-layer, .ring-orbit { position: absolute; inset: 0; }
+/* --bw/--bh = size of the Figma parent frame the --x/--y/--w/--h values are measured in */
+.hero__art { --bw: 1568; --bh: 1597; }
+.g, .hero__devices {
+  position: absolute; display: block; max-width: none;
+  left: calc(var(--x) / var(--bw) * 100%); top: calc(var(--y) / var(--bh) * 100%);
+  width: calc(var(--w) / var(--bw) * 100%); height: calc(var(--h) / var(--bh) * 100%);
+}
+.g--blob, .g--spark { mix-blend-mode: plus-lighter; }
+
+/* Glow animation: blobs breathe, the light behind the ring sways and pulses,
+   the thin arcs and sparkles shimmer. */
+.ring-orbit { transform-origin: calc(1043 / 1568 * 100%) calc(505 / 1597 * 100%); animation: ring-sway 14s ease-in-out infinite; }
+.g--blob { animation: breathe 7s ease-in-out infinite; transform-origin: center; }
+.g--b2 { animation-delay: -1.75s; } .g--b3 { animation-delay: -3.5s; } .g--b4 { animation-delay: -5.25s; }
+.g--wedge { animation: glow-pulse 4s ease-in-out infinite; }
+.g--w2 { animation-delay: -2s; }
+.g--arc { animation: arc-pulse 4s ease-in-out infinite; }
+.g--a2 { animation-delay: -2s; }
+.g--spark { animation: spark 3s ease-in-out infinite; }
+.g--s2 { animation-delay: -1.5s; }
+@keyframes breathe   { 0%,100% { opacity: .85; transform: scale(.97); } 50% { opacity: 1; transform: scale(1.06); } }
+@keyframes ring-sway { 0%,100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@keyframes glow-pulse{ 0%,100% { opacity: .9; filter: brightness(1.05); } 50% { opacity: 1; filter: brightness(1.6) saturate(1.25); } }
+@keyframes arc-pulse { 0%,100% { opacity: .75; } 50% { opacity: 1; filter: brightness(1.4); } }
+@keyframes spark     { 0%,100% { opacity: .35; filter: none; } 50% { opacity: 1; filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 18px #d9a6ff); } }
+
+/* Same neon edge + halo as Frame 229 in M2, so every ring on the page glows the same way */
+.hero__neon, .hero__halo { border-radius: 50%; }
+.hero__neon {
+  border: max(calc(4 / 19.2 * 1cqw), 2px) solid rgba(232, 200, 255, .95);
+  box-shadow:
+    0 0 calc(12 / 19.2 * 1cqw) rgba(214, 160, 255, .95),
+    0 0 calc(36 / 19.2 * 1cqw) rgba(163, 51, 249, .9),
+    0 0 calc(90 / 19.2 * 1cqw) rgba(163, 51, 249, .6),
+    inset 0 0 calc(14 / 19.2 * 1cqw) rgba(214, 160, 255, .8),
+    inset 0 0 calc(50 / 19.2 * 1cqw) rgba(163, 51, 249, .55);
+  mix-blend-mode: plus-lighter;
+  animation: neon-pulse 3.2s ease-in-out infinite;
+}
+.hero__halo {
+  background: radial-gradient(closest-side, transparent 86%, rgba(163, 51, 249, .55) 94%, rgba(163, 51, 249, 0) 100%);
+  filter: blur(calc(20 / 19.2 * 1cqw));
+  animation: halo-pulse 3.2s ease-in-out infinite;
+}
+
+/* Both phones are one group: they float and tilt together, front phone always on top */
+.hero__devices-float { position: absolute; inset: 0; animation: float 6s ease-in-out infinite; filter: drop-shadow(0 30px 60px rgba(0,0,0,.55)); }
+.hero__phone { position: absolute; height: auto; }
+.hero__phone--back  { z-index: 1; left: 0; top: 0; width: calc(284.256 / 533.1 * 100%); }
+.hero__phone--front { z-index: 2; left: calc(248.83 / 533.1 * 100%); top: calc(153.13 / 888.1 * 100%); width: calc(284.256 / 533.1 * 100%); }
+
+/* Frame 228: copy (x120, vertically centred, w963) */
+.hero__copy {
+  position: absolute; left: calc(120 / 1920 * 100%); top: 0; bottom: 0; width: calc(963 / 1920 * 100%);
+  display: flex; flex-direction: column; justify-content: center; gap: 3.333cqw;
+}
+.hero__text { display: flex; flex-direction: column; gap: 2.083cqw; }
+.hero__text h1 { font-weight: 700; font-size: max(3.229cqw, 30px); line-height: 1.21; }
+.hero__text p  { font-weight: 500; font-size: max(1.146cqw, 14px); line-height: 1.64; }
+.hero__actions { display: flex; gap: 2.083cqw; flex-wrap: wrap; }
+.hero__copy .btn { min-width: 0; width: 12.865cqw; padding: max(.833cqw, 10px); font-size: max(.9375cqw, 14px); }
+.hero__actions--center { justify-content: center; margin-top: 16px; gap: 40px; }
 
 /* float animation */
 @keyframes float { 0%,100% { translate: 0 0; } 50% { translate: 0 -14px; } }
@@ -118,23 +215,69 @@ section { position: relative; background: var(--grad-bg); overflow: hidden; }
 .float--delay { animation-delay: -3s; }
 
 /* ============ M2 Platform ============ */
-.platform__stage { position: relative; width: 100%; aspect-ratio: 1680 / 1100; margin-top: 24px; }
-.ring--platform { width: 53.6%; aspect-ratio: 1; left: 50%; top: 50%; translate: -50% -50%; }
-.platform__phones { position: absolute; width: 69.2%; left: 15.4%; top: 4%; filter: drop-shadow(0 40px 60px rgba(0,0,0,.55)); }
+/* Same idea as the hero: the 1920×1438 Figma frame scaled by screen width (1cqw = 19.2 design px) */
+.platform__stage { container-type: inline-size; position: relative; width: 100%; aspect-ratio: 1920 / 1438; }
+.platform__head {
+  position: absolute; top: calc(120 / 19.2 * 1cqw); left: calc(407 / 19.2 * 1cqw); width: calc(1106 / 19.2 * 1cqw);
+  display: flex; flex-direction: column; gap: calc(24 / 19.2 * 1cqw); text-align: center; z-index: 2;
+}
+.platform__head h2 { font-weight: 700; font-size: max(calc(62 / 19.2 * 1cqw), 28px); line-height: 1.21; white-space: nowrap; }
+.platform__head p  { font-weight: 500; font-size: max(calc(20 / 19.2 * 1cqw), 14px); line-height: 1.8; }
+
+/* Frame 231 */
+.f231 { position: absolute; left: calc(379 / 19.2 * 1cqw); top: calc(247 / 19.2 * 1cqw); width: calc(1161.831 / 19.2 * 1cqw); aspect-ratio: 1161.831 / 1122.051; }
+.f231__phones { position: absolute; left: 0; top: calc(99 / 1122.051 * 100%); width: 100%; height: auto; z-index: 1; filter: drop-shadow(0 40px 60px rgba(0,0,0,.5)); }
+
+/* Frame 229: glowing ring + animation */
+.f229 { --bw: 1122.051; --bh: 1122.051; position: absolute; left: calc(20 / 1161.831 * 100%); top: 0; width: calc(1122.051 / 1161.831 * 100%); aspect-ratio: 1; }
+.f229__orbit { position: absolute; inset: 0; animation: ring-sway 14s ease-in-out infinite; }
+.g--ring  { animation: ring-glow 4s ease-in-out infinite; }
+/* Neon edge on the 900px disc + a soft outer halo, both pulsing */
+.f229__neon, .f229__halo {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  left: calc(111 / 1122.051 * 100%); top: calc(111 / 1122.051 * 100%); width: calc(900 / 1122.051 * 100%); aspect-ratio: 1;
+}
+.f229__neon {
+  border: max(calc(4 / 19.2 * 1cqw), 2px) solid rgba(232, 200, 255, .95);
+  box-shadow:
+    0 0 calc(12 / 19.2 * 1cqw) rgba(214, 160, 255, .95),
+    0 0 calc(36 / 19.2 * 1cqw) rgba(163, 51, 249, .9),
+    0 0 calc(90 / 19.2 * 1cqw) rgba(163, 51, 249, .6),
+    inset 0 0 calc(14 / 19.2 * 1cqw) rgba(214, 160, 255, .8),
+    inset 0 0 calc(50 / 19.2 * 1cqw) rgba(163, 51, 249, .55);
+  mix-blend-mode: plus-lighter;
+  animation: neon-pulse 3.2s ease-in-out infinite;
+}
+.f229__halo {
+  background: radial-gradient(closest-side, transparent 86%, rgba(163, 51, 249, .55) 94%, rgba(163, 51, 249, 0) 100%);
+  transform: scale(1.18);
+  filter: blur(calc(20 / 19.2 * 1cqw));
+  animation: halo-pulse 3.2s ease-in-out infinite;
+}
+@keyframes neon-pulse { 0%,100% { opacity: .7; filter: brightness(.95); } 50% { opacity: 1; filter: brightness(1.35); } }
+@keyframes halo-pulse { 0%,100% { opacity: .55; transform: scale(1.14); } 50% { opacity: 1; transform: scale(1.22); } }
+.g--shine { mix-blend-mode: plus-lighter; animation: shine-spin 10s linear infinite; }
+@keyframes ring-glow  { 0%,100% { opacity: .8; filter: brightness(1); } 50% { opacity: 1; filter: brightness(1.6) drop-shadow(0 0 18px rgba(163,51,249,.8)); } }
+@keyframes shine-spin { from { transform: rotate(-106.83deg); } to { transform: rotate(253.17deg); } }
+
+/* Floating chips around Frame 231 — sized and placed in the same scale as the frame */
 .chip {
-  position: absolute; padding: 24px 32px; border-radius: var(--radius-lg);
+  position: absolute; z-index: 2;
+  left: calc(var(--x) / 19.2 * 1cqw); top: calc(var(--y) / 19.2 * 1cqw);
+  padding: max(calc(24 / 19.2 * 1cqw), 10px) max(calc(32 / 19.2 * 1cqw), 14px);
+  border-radius: max(calc(32 / 19.2 * 1cqw), 16px);
   background: var(--card-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--card-border);
-  font-weight: 500; font-size: clamp(14px, 1.05vw, 20px); white-space: nowrap;
+  font-weight: 500; font-size: max(calc(20 / 19.2 * 1cqw), 12px); line-height: 1.21; white-space: nowrap;
   animation: float 7s ease-in-out infinite;
   transition: background .25s, border-color .25s, transform .25s var(--ease);
 }
 .chip:hover { background: rgba(163,51,249,.35); border-color: rgba(163,51,249,.6); transform: scale(1.05); }
-.chip--a { left: 3.7%; top: 27%;  animation-delay: -1s; }
-.chip--b { left: 80.2%; top: 31%; animation-delay: -2.5s; }
-.chip--c { left: 4.8%; top: 57%;  animation-delay: -4s; }
-.chip--d { left: 71.6%; top: 59%; animation-delay: -5.5s; }
-.chip--e { left: 42.4%; top: 82%; animation-delay: -3s; }
+.chip--a { animation-delay: -1s; }
+.chip--b { animation-delay: -2.5s; }
+.chip--c { animation-delay: -4s; }
+.chip--d { animation-delay: -5.5s; }
+.chip--e { animation-delay: -3s; }
 
 /* ============ Cards ============ */
 .cards { display: grid; gap: 40px; }
@@ -177,23 +320,154 @@ section { position: relative; background: var(--grad-bg); overflow: hidden; }
 .card--info .h3--sm { font-size: clamp(18px, 1.15vw, 22px); }
 
 /* M3 arc */
-.features .arc {
-  position: absolute; left: -19%; right: -19%; bottom: -1700px; height: 2650px; border-radius: 50%;
-  border-top: 4px solid rgba(217,166,255,.7); pointer-events: none;
-  box-shadow: 0 -30px 120px -10px rgba(163,51,249,.55), inset 0 30px 120px -20px rgba(163,51,249,.3);
+/* Frame 229 in M3: Figma's 1920×488 strip at the bottom, flipped vertically (scaleY(-1)) */
+.m3arc {
+  --bw: 1920; --bh: 488;
+  position: absolute; left: 0; bottom: 0; width: 100%; height: calc(488 / 1920 * 100vw);
+  transform: scaleY(-1); pointer-events: none;
+}
+.m3arc__orbit { position: absolute; inset: 0; transform-origin: 50% calc(-934 / 488 * 100%); animation: ring-sway 14s ease-in-out infinite; }
+.m3arc__orbit .g--wedge { animation: glow-pulse 4s ease-in-out infinite; }
+.m3arc__orbit .g--w2 { animation-delay: -2s; }
+.m3arc .g--arc { animation: arc-pulse 4s ease-in-out infinite; }
+/* Neon edge on the big circle, pulsing like Frame 229 in M2 */
+.m3arc__neon {
+  border-radius: 50%;
+  border: max(calc(4 / 19.2 * 1vw), 2px) solid rgba(232, 200, 255, .95);
+  box-shadow:
+    0 0 calc(12 / 19.2 * 1vw) rgba(214, 160, 255, .95),
+    0 0 calc(40 / 19.2 * 1vw) rgba(163, 51, 249, .9),
+    0 0 calc(110 / 19.2 * 1vw) rgba(163, 51, 249, .6),
+    inset 0 0 calc(16 / 19.2 * 1vw) rgba(214, 160, 255, .8),
+    inset 0 0 calc(70 / 19.2 * 1vw) rgba(163, 51, 249, .5);
+  mix-blend-mode: plus-lighter;
+  animation: neon-pulse 3.2s ease-in-out infinite;
+}
+/* White highlight (Ellipse 38) rotated -91.19° like Figma, sweeping back and forth along the arc */
+.m3arc__shine { animation: m3-shine 9s ease-in-out infinite; }
+.m3arc__shine img {
+  position: absolute; max-width: none; mix-blend-mode: plus-lighter;
+  left: -0.44%; top: 21.06%; width: calc(310.554 / 2651.75 * 100%); height: calc(1578.3 / 2651.75 * 100%);
+}
+@keyframes m3-shine { 0%,100% { transform: rotate(-131deg); } 50% { transform: rotate(-51deg); } }
+
+/* Fade the arc out before the section edge so there is no hard line between M3 and M4 */
+.features::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 14%; z-index: 0; pointer-events: none;
+  background: var(--grad-bg);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 85%);
+          mask-image: linear-gradient(to bottom, transparent, #000 85%);
 }
 
-/* M4 rings */
-.ring--sm { width: 242px; aspect-ratio: 1; border-width: 4px; }
-.ring--x1 { left: 102px; top: 472px; }
-.ring--x2 { left: calc(33.33% + 199px); top: 608px; }
-.ring--x3 { right: 88px; top: 752px; }
+/* M3 on desktop: the 1920×1080 Figma frame scaled by screen width (1cqw = 19.2 design px) */
+@media (min-width: 1025px) {
+  .features { padding: 0; }
+  .features > .container {
+    container-type: inline-size; width: 100%;
+    min-height: calc(1080 / 19.2 * 1cqw);
+    padding-block: calc(120 / 19.2 * 1cqw);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: calc(120 / 19.2 * 1cqw);
+  }
+  .features .section__head { width: calc(1106 / 19.2 * 1cqw); max-width: none; gap: calc(24 / 19.2 * 1cqw); }
+  .features .section__head h2 { font-size: max(calc(52 / 19.2 * 1cqw), 28px); }
+  .features .section__head p  { font-size: max(calc(22 / 19.2 * 1cqw), 14px); line-height: 1.636; }
+  .features .cards--3 { width: calc(1680 / 19.2 * 1cqw); margin: 0; gap: calc(40 / 19.2 * 1cqw); }
+  .features .card--feature {
+    padding: calc(64 / 19.2 * 1cqw) calc(32 / 19.2 * 1cqw);
+    border-radius: calc(32 / 19.2 * 1cqw);
+    min-height: calc(452 / 19.2 * 1cqw);
+  }
+  .features .card--feature h3 {
+    width: calc(247 / 19.2 * 1cqw); max-width: none;
+    margin: calc(24 / 19.2 * 1cqw) 0 calc(40 / 19.2 * 1cqw);
+    font-size: max(calc(26 / 19.2 * 1cqw), 16px); line-height: 1.385;
+  }
+  .features .card--feature:nth-child(2) h3 { font-size: max(calc(24 / 19.2 * 1cqw), 15px); line-height: 1.5; }
+  .features .card--feature p { font-size: max(calc(22 / 19.2 * 1cqw), 14px); line-height: 1.636; }
+  .features .icon-tile { width: calc(80 / 19.2 * 1cqw); height: calc(80 / 19.2 * 1cqw); border-radius: calc(16 / 19.2 * 1cqw); }
+  .features .icon-tile img { width: calc(48 / 19.2 * 1cqw); height: calc(48 / 19.2 * 1cqw); }
+}
+
+/* ============ M4 ============ */
+/* Three small glowing rings (Figma 301×301 groups), same layers + animation as Frame 229 */
+.mring {
+  --bw: 301; --bh: 301;
+  position: absolute; z-index: 0; pointer-events: none;
+  left: calc(var(--x) / 19.2 * 1cqw); top: calc(var(--y) / 19.2 * 1cqw);
+  width: calc(301 / 19.2 * 1cqw); aspect-ratio: 1;
+  transform: rotate(var(--rot));
+}
+.mring__orbit { position: absolute; inset: 0; animation: ring-sway 14s ease-in-out infinite; }
+.mring__neon {
+  border-radius: 50%;
+  border: max(calc(3 / 19.2 * 1cqw), 1.5px) solid rgba(232, 200, 255, .95);
+  box-shadow:
+    0 0 calc(8 / 19.2 * 1cqw) rgba(214, 160, 255, .95),
+    0 0 calc(22 / 19.2 * 1cqw) rgba(163, 51, 249, .9),
+    0 0 calc(50 / 19.2 * 1cqw) rgba(163, 51, 249, .55),
+    inset 0 0 calc(8 / 19.2 * 1cqw) rgba(214, 160, 255, .8),
+    inset 0 0 calc(26 / 19.2 * 1cqw) rgba(163, 51, 249, .5);
+  mix-blend-mode: plus-lighter;
+  animation: neon-pulse 3.2s ease-in-out infinite;
+}
+.mring--b .mring__neon, .mring--b .g--ring { animation-delay: -1.1s; }
+.mring--a .mring__neon, .mring--a .g--ring { animation-delay: -2.2s; }
+.mring .g--shine { animation-duration: 8s; }
+
+/* Fade out the bottom so there is no hard line between M4 and M5 */
+.experience::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 10%; z-index: 0; pointer-events: none;
+  background: var(--grad-bg);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 85%);
+          mask-image: linear-gradient(to bottom, transparent, #000 85%);
+}
+
+/* M4 on desktop: the 1920×1080 Figma frame scaled by screen width (1cqw = 19.2 design px) */
+@media (min-width: 1025px) {
+  .experience { padding: 0; }
+  .experience > .container {
+    container-type: inline-size; width: 100%;
+    min-height: calc(1080 / 19.2 * 1cqw);
+    /* no side padding: cqw is measured on the content box, so it must stay the full 1920 width */
+    padding: calc(120 / 19.2 * 1cqw) 0 calc(96 / 19.2 * 1cqw);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: calc(120 / 19.2 * 1cqw);
+  }
+  .experience .section__head { width: calc(1106 / 19.2 * 1cqw); max-width: none; gap: calc(24 / 19.2 * 1cqw); position: relative; z-index: 1; }
+  .experience .section__head h2 { font-size: max(calc(62 / 19.2 * 1cqw), 28px); }
+  .experience .section__head p  { font-size: max(calc(19 / 19.2 * 1cqw), 13px); line-height: 1.895; }
+  .experience .cards--3 { width: calc(1680 / 19.2 * 1cqw); margin: 0; gap: calc(40 / 19.2 * 1cqw); position: relative; z-index: 1; }
+  .experience .card--role {
+    padding: calc(64 / 19.2 * 1cqw) calc(32 / 19.2 * 1cqw);
+    border-radius: calc(32 / 19.2 * 1cqw);
+    gap: calc(40 / 19.2 * 1cqw);
+  }
+  .experience .card--role h3 { font-size: max(calc(26 / 19.2 * 1cqw), 16px); line-height: 1.385; }
+  .experience .card--role:nth-child(2) h3 { font-size: max(calc(24 / 19.2 * 1cqw), 15px); line-height: 1.5; }
+  .experience .card--role p { font-size: max(calc(22 / 19.2 * 1cqw), 14px); line-height: 1.636; }
+}
 
 /* ============ M5 Journey ============ */
 .journey { padding-bottom: 0; }
 .journey__stage { position: relative; margin-top: 120px; aspect-ratio: 1680 / 661; }
-.journey__beam { position: absolute; left: 34.1%; top: 0; width: 31.5%; height: 100%; background: rgba(163,51,249,.8); filter: blur(100px); mix-blend-mode: plus-lighter; }
-.journey__phone { position: absolute; bottom: 0; left: 50%; translate: -50% 0; width: 31.7%; height: auto; }
+/* The beam sits in a taller wrapper so its blur isn't cut at the top, and the wrapper fades out at the bottom */
+.journey__beam-wrap {
+  position: absolute; left: 0; right: 0; top: -40%; bottom: 0; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent);
+          mask-image: linear-gradient(to bottom, #000 80%, transparent);
+}
+.journey__beam {
+  position: absolute; left: 34.1%; top: 28.6%; width: 31.5%; height: 71.4%;
+  background: rgba(163,51,249,.8); filter: blur(100px); mix-blend-mode: plus-lighter;
+  animation: beam-pulse 4.5s ease-in-out infinite;
+}
+@keyframes beam-pulse { 0%,100% { opacity: .75; transform: scaleX(.92); } 50% { opacity: 1; transform: scaleX(1.08); } }
+.journey__phone {
+  position: absolute; bottom: 0; left: 50%; translate: -50% 0; width: 31.7%; height: auto;
+  -webkit-mask-image: linear-gradient(to bottom, #000 82%, transparent);
+          mask-image: linear-gradient(to bottom, #000 82%, transparent);
+}
 .step {
   position: absolute; padding: 40px 32px; border-radius: var(--radius-lg);
   background: var(--card-bg); border: 1px solid var(--card-border);
@@ -209,6 +483,39 @@ section { position: relative; background: var(--grad-bg); overflow: hidden; }
 .step--2 { left: 5.9%;  top: 41.8%; width: 30.6%; }
 .step--3 { left: 63.7%; top: 17.2%; width: 29.8%; }
 .step--4 { left: 61.8%; top: 59%;   width: 35.3%; }
+/* Steps float gently like the chips in M2 */
+.step { animation: float 7s ease-in-out infinite; }
+.step--2 { animation-delay: -1.75s; } .step--3 { animation-delay: -3.5s; } .step--4 { animation-delay: -5.25s; }
+
+/* M5 on desktop: the 1920×1147 Figma frame scaled by screen width (1cqw = 19.2 design px) */
+@media (min-width: 1025px) {
+  .journey { padding: 0; }
+  .journey > .container {
+    container-type: inline-size; width: 100%;
+    padding-top: calc(120 / 19.2 * 1cqw);
+    display: flex; flex-direction: column; align-items: center; gap: calc(120 / 19.2 * 1cqw);
+  }
+  .journey .section__head { width: calc(1106 / 19.2 * 1cqw); max-width: none; gap: calc(24 / 19.2 * 1cqw); }
+  .journey .section__head h2 { font-size: max(calc(62 / 19.2 * 1cqw), 28px); }
+  .journey .section__head p  { font-size: max(calc(22 / 19.2 * 1cqw), 14px); line-height: 1.636; }
+  .journey__stage { width: calc(1680 / 19.2 * 1cqw); height: calc(661 / 19.2 * 1cqw); aspect-ratio: auto; margin: 0; }
+  .journey__beam { filter: blur(calc(100 / 19.2 * 1cqw)); }
+  .journey__phone { width: calc(533 / 19.2 * 1cqw); }
+  .step {
+    padding: calc(40 / 19.2 * 1cqw) calc(32 / 19.2 * 1cqw);
+    border-radius: calc(32 / 19.2 * 1cqw);
+    gap: calc(16 / 19.2 * 1cqw);
+  }
+  .step--1 { left: calc(168 / 19.2 * 1cqw);  top: 0;                          width: calc(477 / 19.2 * 1cqw); }
+  .step--2 { left: calc(99 / 19.2 * 1cqw);   top: calc(276 / 19.2 * 1cqw);    width: calc(514 / 19.2 * 1cqw); }
+  .step--3 { left: calc(1070 / 19.2 * 1cqw); top: calc(114 / 19.2 * 1cqw);    width: calc(500 / 19.2 * 1cqw); }
+  .step--4 { left: calc(1038 / 19.2 * 1cqw); top: calc(390 / 19.2 * 1cqw);    width: calc(593 / 19.2 * 1cqw); }
+  .step__title { gap: calc(16 / 19.2 * 1cqw); }
+  .step h3 { font-size: max(calc(26 / 19.2 * 1cqw), 16px); line-height: 1.385; }
+  .step p  { font-size: max(calc(18 / 19.2 * 1cqw), 13px); line-height: 1.21; }
+  .step .icon-tile--sm { width: calc(40 / 19.2 * 1cqw); height: calc(40 / 19.2 * 1cqw); border-radius: calc(16 / 19.2 * 1cqw); }
+  .step .icon-tile--sm img { width: calc(24 / 19.2 * 1cqw); height: calc(24 / 19.2 * 1cqw); padding: 0; }
+}
 
 /* ============ M6 / M7 splits ============ */
 .split { display: grid; align-items: center; gap: 40px; margin-top: 64px; position: relative; z-index: 1; }
@@ -224,10 +531,55 @@ section { position: relative; background: var(--grad-bg); overflow: hidden; }
 
 /* ============ M8 CTA ============ */
 .cta { padding-bottom: 80px; }
-.cta__phones { width: min(820px, 100%); margin: 40px auto 0; filter: drop-shadow(0 40px 80px rgba(163,51,249,.35)); }
-.blob--cta1 { width: 1100px; height: 1100px; left: 50%; top: 40%; translate: -50% 0; opacity: .9; }
-.blob--cta2 { width: 855px; height: 855px; left: 0; top: 30%; opacity: .5; }
-.blob--cta3 { width: 855px; height: 855px; right: 0; top: 10%; opacity: .5; }
+.cta__phones-wrap { width: min(820px, 100%); margin: 40px auto 0; }
+.cta__phones { width: 100%; height: auto; animation: float 6s ease-in-out infinite; }
+
+/* ============ M6 / M7 / M8 stages ============ */
+/* Each section is its Figma frame; glow blobs are the Figma ellipse layers, breathing like the hero */
+.stage { position: relative; container-type: inline-size; }
+.stage__glow { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.g--beam { mix-blend-mode: plus-lighter; animation: glow-pulse 4s ease-in-out infinite; }
+.g--beam-flip { transform: scaleX(-1); animation-delay: -2s; }
+
+/* Soft fade at the top and bottom edges so the glows never end in a hard line between sections */
+.fade-edges { isolation: isolate; }
+.fade-edges::before, .fade-edges::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 8%; z-index: 0; pointer-events: none;
+  background: var(--grad-bg);
+}
+.fade-edges::before { top: 0;    -webkit-mask-image: linear-gradient(to top, transparent, #000 85%);    mask-image: linear-gradient(to top, transparent, #000 85%); }
+.fade-edges::after  { bottom: 0; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 85%); mask-image: linear-gradient(to bottom, transparent, #000 85%); }
+
+@media (min-width: 1025px) {
+  .fleet, .scale, .cta { padding: 0; }
+  .stage--m6 { aspect-ratio: 1920 / 1296; }
+  .stage--m7 { aspect-ratio: 1920 / 1220; }
+  .stage--m8 { aspect-ratio: 1920 / 1570; }
+  .stage > .container { position: absolute; inset: 0; width: auto; margin: 0; }
+  .stage .section__head {
+    position: absolute; left: calc(407 / 19.2 * 1cqw); top: calc(120 / 19.2 * 1cqw); width: calc(1106 / 19.2 * 1cqw);
+    max-width: none; gap: calc(24 / 19.2 * 1cqw);
+  }
+  .stage .section__head h2 { font-size: max(calc(62 / 19.2 * 1cqw), 28px); }
+  .stage .section__head p  { font-size: max(calc(22 / 19.2 * 1cqw), 14px); line-height: 1.636; }
+  .stage .split { position: absolute; inset: 0; margin: 0; padding: 0; display: block; width: auto; }
+  .stage .split__cards { position: absolute; width: calc(820 / 19.2 * 1cqw); gap: calc(40 / 19.2 * 1cqw); }
+  .stage .card--info { padding: calc(32 / 19.2 * 1cqw); gap: calc(24 / 19.2 * 1cqw); border-radius: calc(32 / 19.2 * 1cqw); }
+  .stage .card--info h3 { font-size: max(calc(26 / 19.2 * 1cqw), 16px); line-height: 1.385; }
+  .stage .card--info .h3--sm { font-size: max(calc(22 / 19.2 * 1cqw), 14px); }
+  .stage .card--info p { font-size: max(calc(20 / 19.2 * 1cqw), 13px); line-height: 1.8; }
+
+  /* M6: tablet x0 y446 w940 · cards x980 y482 w820 */
+  .stage--m6 .split__media { position: absolute; left: 0; top: calc(446 / 19.2 * 1cqw); width: calc(940 / 19.2 * 1cqw); }
+  .stage--m6 .split__cards { left: calc(980 / 19.2 * 1cqw); top: calc(482 / 19.2 * 1cqw); }
+
+  /* M7: cards x120 y469 w820 · phones x1123 y414 w675 */
+  .stage--m7 .split__cards { left: calc(120 / 19.2 * 1cqw); top: calc(469 / 19.2 * 1cqw); }
+  .stage--m7 .split__media--phones { position: absolute; left: calc(1123 / 19.2 * 1cqw); top: calc(414 / 19.2 * 1cqw); width: calc(675 / 19.2 * 1cqw); max-width: none; }
+
+  /* M8: phones x550 y446 w820 */
+  .stage--m8 .cta__phones-wrap { position: absolute; left: calc(550 / 19.2 * 1cqw); top: calc(446 / 19.2 * 1cqw); width: calc(820 / 19.2 * 1cqw); margin: 0; }
+}
 
 /* ============ Footer ============ */
 .footer { background: #050505; border-top: 1px solid rgba(255,255,255,.06); padding-block: 32px; color: var(--text-dim); font-size: 14px; }
@@ -268,12 +620,14 @@ section { position: relative; background: var(--grad-bg); overflow: hidden; }
 .step.reveal.is-visible.is-active { transform: scale(1.03); }
 
 /* ============ Responsive ============ */
-@media (max-width: 1280px) {
+@media (max-width: 1024px) {
   .journey__stage { aspect-ratio: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-bottom: 0; }
-  .journey__beam { left: 25%; width: 50%; top: 30%; height: 70%; }
-  .step { position: relative; left: auto; top: auto; width: auto; }
+  .journey__beam-wrap { inset: 30% 20% 0; }
+  .step { position: relative; left: auto; top: auto; width: auto; animation: none; }
   .step h3 { white-space: normal; }
   .journey__phone { position: relative; grid-column: 1 / -1; grid-row: 3; translate: none; left: auto; width: min(533px, 80%); justify-self: center; margin-top: 16px; }
+}
+@media (max-width: 1280px) {
   .split--media-left { grid-template-columns: 1fr; padding-inline: var(--gutter); }
   .split--media-left .split__media { width: min(940px, 100%); justify-self: center; }
   .split--media-right { grid-template-columns: 1fr; }
@@ -281,23 +635,27 @@ section { position: relative; background: var(--grad-bg); overflow: hidden; }
 }
 
 @media (max-width: 1024px) {
-  .hero__grid { grid-template-columns: 1fr; text-align: center; }
-  .hero__copy { align-items: center; gap: 40px; }
-  .hero__copy > .lead { margin-top: -16px; }
-  .hero__actions { justify-content: center; }
-  .hero__phones { height: clamp(380px, 70vw, 640px); width: min(560px, 100%); margin-inline: auto; }
-  .hero__phone { width: clamp(150px, 30vw, 260px); }
-  .hero__phone--back { left: 6%; }
-  .hero__phone--front { left: auto; right: 6%; }
-  .ring--hero { width: 600px; height: 600px; right: -260px; top: auto; bottom: -120px; }
+  /* Stack copy above the ring + phones; the art is cropped around the ring */
+  .hero { --hero-pad-bottom: 24px; }
+  .hero__stage { width: min(600px, 100% - 2 * var(--gutter)); aspect-ratio: auto; display: flex; flex-direction: column; }
+  .hero__copy { position: relative; left: auto; width: auto; order: -1; align-items: center; text-align: center; gap: 32px; margin-bottom: 8px; }
+  .hero__text { gap: 20px; }
+  .hero__text h1 { font-size: clamp(32px, 8vw, 48px); }
+  .hero__text p { font-size: clamp(15px, 3.6vw, 18px); }
+  .hero__actions { justify-content: center; gap: 16px; }
+  .hero__copy .btn { width: auto; flex: 1 1 180px; max-width: 247px; padding: 14px; font-size: 16px; }
+  .hero__clip { position: relative; inset: auto; overflow: visible; -webkit-mask-image: none; mask-image: none; }
+  .hero__art { position: relative; left: auto; top: auto; height: auto; width: 156.8%; aspect-ratio: 1568 / 1597; margin: 0 0 -34% -54.3%; }
   .cards--3 { grid-template-columns: 1fr; margin-top: 64px; max-width: 640px; margin-inline: auto; }
   .card--feature, .card--role { padding: 48px 28px; }
-  .ring--sm { display: none; }
+  .mring { display: none; }
 
-  .platform__stage { aspect-ratio: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding-top: 0; }
-  .platform__phones { position: relative; width: 100%; left: auto; top: auto; order: -1; margin-bottom: 16px; }
-  .ring--platform { top: 30%; width: 80%; }
-  .chip { position: static; padding: 14px 20px; animation: none; }
+  .platform__stage { aspect-ratio: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding: 72px var(--gutter) 64px; }
+  .platform__head { position: static; width: 100%; gap: 16px; }
+  .platform__head h2 { white-space: normal; font-size: clamp(30px, 7vw, 44px); }
+  .platform__head p { font-size: clamp(15px, 3.6vw, 18px); line-height: 1.64; }
+  .f231 { position: relative; left: auto; top: auto; width: min(640px, 112%); flex: none; margin: 8px -6% 16px; }
+  .chip { position: static; padding: 12px 20px; font-size: 14px; border-radius: 24px; animation: none; }
 }
 
 @media (max-width: 760px) {

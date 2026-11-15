@@ -1,0 +1,17 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="908" height="908" viewBox="0 0 908 908" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Ellipse 38" filter="url(#filter0_f_0_4)" style="mix-blend-mode:plus-lighter">
+<path d="M904 454C904 702.528 702.528 904 454 904C205.472 904 4 702.528 4 454C4 205.472 205.472 4 454 4C702.528 4 904 205.472 904 454ZM12.1 454C12.1 698.055 209.945 895.9 454 895.9C698.055 895.9 895.9 698.055 895.9 454C895.9 209.945 698.055 12.1 454 12.1C209.945 12.1 12.1 209.945 12.1 454Z" fill="url(#paint0_radial_0_4)"/>
+</g>
+<defs>
+<filter id="filter0_f_0_4" x="0" y="0" width="908" height="908" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="2" result="effect1_foregroundBlur_0_4"/>
+</filter>
+<radialGradient id="paint0_radial_0_4" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(904 441) rotate(-179.448) scale(882.041)">
+<stop stop-color="white"/>
+<stop offset="0.5" stop-color="#FEFEFE" stop-opacity="0.5"/>
+<stop offset="1" stop-color="#FDFDFD" stop-opacity="0"/>
+</radialGradient>
+</defs>
+</svg>
