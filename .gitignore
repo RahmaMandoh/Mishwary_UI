@@ -1,0 +1,4 @@
+# Large original source images used only to generate assets/img
+assets/src/
+.DS_Store
+Thumbs.db
