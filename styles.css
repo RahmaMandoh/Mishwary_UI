@@ -746,6 +746,38 @@ section { position: relative; overflow: hidden; }
   .card--feature .icon-tile { width: 64px; height: 64px; }
   .card--feature .icon-tile img { width: 36px; height: 36px; }
 
+  /* Same glow + motion as desktop. On desktop the neon/halo sizes scale with the 1920 frame,
+     which makes them almost invisible here, so they get fixed pixel sizes instead. */
+  .hero__neon, .f229__neon, .m3arc__neon {
+    border-width: 2px;
+    box-shadow:
+      0 0 6px rgba(214, 160, 255, .95),
+      0 0 18px rgba(163, 51, 249, .9),
+      0 0 44px rgba(163, 51, 249, .6),
+      inset 0 0 7px rgba(214, 160, 255, .8),
+      inset 0 0 26px rgba(163, 51, 249, .55);
+  }
+  .hero__halo, .f229__halo { filter: blur(10px); }
+  .journey__beam { filter: blur(48px); }
+  .step { animation: float 7s ease-in-out infinite; }
+
+  /* M4 rings come back (they're in the mobile design): placed around the cards */
+  .experience > .container { position: relative; }
+  .mring { display: block; left: auto; right: auto; top: auto; width: 140px; }
+  .mring--c { left: -30px; bottom: 210px; }
+  .mring--b { left: calc(50% - 70px); bottom: 40px; }
+  .mring--a { right: -20px; bottom: -40px; }
+  .mring__neon {
+    border-width: 1.5px;
+    box-shadow:
+      0 0 4px rgba(214, 160, 255, .95),
+      0 0 12px rgba(163, 51, 249, .9),
+      0 0 28px rgba(163, 51, 249, .55),
+      inset 0 0 4px rgba(214, 160, 255, .8),
+      inset 0 0 14px rgba(163, 51, 249, .5);
+  }
+  .experience .cards--3 { position: relative; z-index: 1; }
+
   /* M6 / M7 — cards first, then the tablet / phones image (as in the mobile design) */
   .split { margin-top: 40px; }
   .split__cards { order: 1; }
@@ -761,6 +793,10 @@ section { position: relative; overflow: hidden; }
   .hero__text p { font-size: 14px; line-height: 1.6; }
   .hero__copy .btn { padding: 12px; font-size: 15px; }
   .hero__art { width: 265%; margin: -9% 0 -53% -111%; }
+  .mring { width: 92px; }
+  .mring--c { left: -24px; bottom: 170px; }
+  .mring--b { left: 52%; bottom: 30px; }
+  .mring--a { right: -14px; bottom: -34px; }
   .platform__stage { padding: 64px var(--gutter) 48px; }
 
   /* Card groups become swipe carousels with the next card peeking in */
