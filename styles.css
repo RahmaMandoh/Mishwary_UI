@@ -362,7 +362,7 @@ section { position: relative; overflow: hidden; }
 }
 
 /* M3 on desktop: the 1920×1080 Figma frame scaled by screen width (1cqw = 19.2 design px) */
-@media (min-width: 1025px) {
+@media (min-width: 1280px) {
   .features { padding: 0; }
   .features > .container {
     container-type: inline-size; width: 100%;
@@ -426,7 +426,7 @@ section { position: relative; overflow: hidden; }
 }
 
 /* M4 on desktop: the 1920×1080 Figma frame scaled by screen width (1cqw = 19.2 design px) */
-@media (min-width: 1025px) {
+@media (min-width: 1280px) {
   .experience { padding: 0; }
   .experience > .container {
     container-type: inline-size; width: 100%;
@@ -490,7 +490,7 @@ section { position: relative; overflow: hidden; }
 .step--2 { animation-delay: -1.75s; } .step--3 { animation-delay: -3.5s; } .step--4 { animation-delay: -5.25s; }
 
 /* M5 on desktop: the 1920×1147 Figma frame scaled by screen width (1cqw = 19.2 design px) */
-@media (min-width: 1025px) {
+@media (min-width: 1280px) {
   .journey { padding: 0; }
   .journey > .container {
     container-type: inline-size; width: 100%;
@@ -552,7 +552,7 @@ section { position: relative; overflow: hidden; }
 .fade-edges::before { top: 0;    -webkit-mask-image: linear-gradient(to top, transparent, #000 85%);    mask-image: linear-gradient(to top, transparent, #000 85%); }
 .fade-edges::after  { bottom: 0; -webkit-mask-image: linear-gradient(to bottom, transparent, #000 85%); mask-image: linear-gradient(to bottom, transparent, #000 85%); }
 
-@media (min-width: 1025px) {
+@media (min-width: 1280px) {
   .fleet, .scale, .cta { padding: 0; }
   .stage--m6 { aspect-ratio: 1920 / 1296; }
   .stage--m7 { aspect-ratio: 1920 / 1220; }
@@ -622,21 +622,21 @@ section { position: relative; overflow: hidden; }
 .step.reveal.is-visible.is-active { transform: scale(1.03); }
 
 /* ============ Responsive ============ */
-@media (max-width: 1024px) {
+@media (max-width: 1279px) {
   .journey__stage { aspect-ratio: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-bottom: 0; }
   .journey__beam-wrap { inset: 30% 20% 0; }
   .step { position: relative; left: auto; top: auto; width: auto; animation: none; }
   .step h3 { white-space: normal; }
   .journey__phone { position: relative; grid-column: 1 / -1; grid-row: 3; translate: none; left: auto; width: min(420px, 80%); justify-self: center; margin-top: 16px; }
 }
-@media (max-width: 1280px) {
+@media (max-width: 1279px) {
   .split--media-left { grid-template-columns: 1fr; padding-inline: var(--gutter); }
   .split--media-left .split__media { width: min(940px, 100%); justify-self: center; }
   .split--media-right { grid-template-columns: 1fr; }
   .ring--x2 { display: none; }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1279px) {
   /* Stack copy above the ring + phones; the art is cropped around the ring */
   .hero { --hero-pad-top: calc(var(--nav-h) + 32px); --hero-pad-bottom: 24px; }
   .hero__stage { width: min(600px, 100% - 2 * var(--gutter)); margin-inline: auto; aspect-ratio: auto; display: flex; flex-direction: column; }
@@ -660,8 +660,8 @@ section { position: relative; overflow: hidden; }
   .chip { position: static; padding: 12px 20px; font-size: 14px; border-radius: 24px; animation: none; }
 }
 
-/* Tablets and phones: hamburger menu (the full link row doesn't fit below 1025px) */
-@media (max-width: 1024px) {
+/* Tablets and phones: hamburger menu (the full link row doesn't fit below 1280px) */
+@media (max-width: 1279px) {
   :root { --nav-h: 64px; }
   .nav__toggle { display: flex; }
   .nav__links {
@@ -701,12 +701,12 @@ section { position: relative; overflow: hidden; }
 
 /* =====================================================================
    Tablet + phone layout, following the MishwaryMobile frame in Figma.
-   Tablet (761–1024) uses the same arrangement as the phone, with more room:
+   Tablet (761–1279) uses the same arrangement as the phone, with more room:
    grids instead of swipe carousels.
    ===================================================================== */
 .platform__visual { position: absolute; inset: 0; }
 
-@media (max-width: 1024px) {
+@media (max-width: 1279px) {
   /* M1 — title + text on top; buttons on the left, ring + phones on the right */
   .hero__stage {
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
@@ -778,10 +778,33 @@ section { position: relative; overflow: hidden; }
   }
   .experience .cards--3 { position: relative; z-index: 1; }
 
+  /* M8 — the Figma glow layers are placed for the wide frame; on smaller screens the glow
+     is drawn right behind the two phones instead (one soft glow per phone), pulsing */
+  .stage--m8 .stage__glow { display: none; }
+  .stage--m8 .cta__phones-wrap { position: relative; isolation: isolate; }
+  .stage--m8 .cta__phones-wrap::before, .stage--m8 .cta__phones-wrap::after {
+    content: ""; position: absolute; z-index: -1; border-radius: 50%; pointer-events: none;
+    mix-blend-mode: plus-lighter; animation: breathe 6s ease-in-out infinite;
+  }
+  /* back phone (History) — lower left */
+  .stage--m8 .cta__phones-wrap::before {
+    left: -32%; top: 14%; width: 112%; height: 100%;
+    background: radial-gradient(closest-side, rgba(163, 51, 249, .95), rgba(163, 51, 249, .4) 55%, transparent);
+    filter: blur(24px);
+  }
+  /* front phone (Start Trip) — upper right */
+  .stage--m8 .cta__phones-wrap::after {
+    left: 18%; top: -22%; width: 112%; height: 100%;
+    background: radial-gradient(closest-side, rgba(214, 90, 240, .95), rgba(163, 51, 249, .4) 55%, transparent);
+    filter: blur(24px); animation-delay: -3s;
+  }
+
   /* M6 / M7 — cards first, then the tablet / phones image (as in the mobile design) */
   .split { margin-top: 40px; }
   .split__cards { order: 1; }
   .split__media { order: 2; }
+  /* the M6 dashboard mockup stays a sensible size on tablets */
+  .split--media-left .split__media { width: min(640px, 100%); justify-self: center; }
   .card--info h3 { font-size: 18px; line-height: 1.35; }
   .card--info .h3--sm { font-size: 17px; }
   .card--info p { font-size: 15px; line-height: 1.6; }
