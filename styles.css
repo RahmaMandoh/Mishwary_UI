@@ -27,6 +27,7 @@ body {
   background: #0c0c0c var(--grad-bg);
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  overflow-x: clip; /* stops anything decorative from widening the page on phones */
 }
 img { max-width: 100%; display: block; }
 h1, h2, h3, p { margin: 0; }
@@ -101,7 +102,8 @@ button { font: inherit; cursor: pointer; }
 /* ============ Sections ============ */
 section { position: relative; overflow: hidden; }
 /* M2's ring glow is allowed to spill softly into M3 instead of being cut at the section edge */
-.platform { overflow: visible; z-index: 1; }
+/* (sideways it's clipped, so it can never widen the page on phones) */
+.platform { overflow-x: clip; overflow-y: visible; z-index: 1; }
 .section { padding-block: clamp(72px, 6.25vw, 120px); }
 .section__head { max-width: 1106px; margin-inline: auto; text-align: center; display: flex; flex-direction: column; gap: 24px; }
 
@@ -625,7 +627,7 @@ section { position: relative; overflow: hidden; }
   .journey__beam-wrap { inset: 30% 20% 0; }
   .step { position: relative; left: auto; top: auto; width: auto; animation: none; }
   .step h3 { white-space: normal; }
-  .journey__phone { position: relative; grid-column: 1 / -1; grid-row: 3; translate: none; left: auto; width: min(533px, 80%); justify-self: center; margin-top: 16px; }
+  .journey__phone { position: relative; grid-column: 1 / -1; grid-row: 3; translate: none; left: auto; width: min(420px, 80%); justify-self: center; margin-top: 16px; }
 }
 @media (max-width: 1280px) {
   .split--media-left { grid-template-columns: 1fr; padding-inline: var(--gutter); }
@@ -636,8 +638,8 @@ section { position: relative; overflow: hidden; }
 
 @media (max-width: 1024px) {
   /* Stack copy above the ring + phones; the art is cropped around the ring */
-  .hero { --hero-pad-bottom: 24px; }
-  .hero__stage { width: min(600px, 100% - 2 * var(--gutter)); aspect-ratio: auto; display: flex; flex-direction: column; }
+  .hero { --hero-pad-top: calc(var(--nav-h) + 32px); --hero-pad-bottom: 24px; }
+  .hero__stage { width: min(600px, 100% - 2 * var(--gutter)); margin-inline: auto; aspect-ratio: auto; display: flex; flex-direction: column; }
   .hero__copy { position: relative; left: auto; width: auto; order: -1; align-items: center; text-align: center; gap: 32px; margin-bottom: 8px; }
   .hero__text { gap: 20px; }
   .hero__text h1 { font-size: clamp(32px, 8vw, 48px); }
@@ -650,20 +652,21 @@ section { position: relative; overflow: hidden; }
   .card--feature, .card--role { padding: 48px 28px; }
   .mring { display: none; }
 
-  .platform__stage { aspect-ratio: auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; padding: 72px var(--gutter) 64px; }
+  .platform__stage { aspect-ratio: auto; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; padding: 72px var(--gutter) 64px; }
   .platform__head { position: static; width: 100%; gap: 16px; }
   .platform__head h2 { white-space: normal; font-size: clamp(30px, 7vw, 44px); }
   .platform__head p { font-size: clamp(15px, 3.6vw, 18px); line-height: 1.64; }
-  .f231 { position: relative; left: auto; top: auto; width: min(640px, 112%); flex: none; margin: 8px -6% 16px; }
+  .f231 { position: relative; left: auto; top: auto; width: min(640px, 112%); flex: none; margin: 8px max(-6%, calc((100% - 640px) / 2)) 16px; }
   .chip { position: static; padding: 12px 20px; font-size: 14px; border-radius: 24px; animation: none; }
 }
 
-@media (max-width: 760px) {
+/* Tablets and phones: hamburger menu (the full link row doesn't fit below 1025px) */
+@media (max-width: 1024px) {
   :root { --nav-h: 64px; }
   .nav__toggle { display: flex; }
   .nav__links {
     position: fixed; inset: var(--nav-h) 0 auto; flex-direction: column; align-items: stretch; gap: 0;
-    background: rgba(10,10,12,.96); backdrop-filter: blur(14px); padding: 8px 16px 20px;
+    background: rgba(10,10,12,.96); backdrop-filter: blur(14px); padding: 8px var(--gutter) 20px;
     border-bottom: 1px solid rgba(255,255,255,.06);
     transform: translateY(-120%); transition: transform .35s var(--ease); z-index: -1;
   }
@@ -672,6 +675,17 @@ section { position: relative; overflow: hidden; }
   .nav__links a::after { display: none; }
   .nav__links .btn { margin-top: 16px; padding: 14px; }
   .nav.menu-open { background: rgba(10,10,12,.96); }
+
+  /* Tighter cards and media on tablets/phones */
+  .card--feature, .card--role { padding: 40px 24px; }
+  .card--feature h3 { margin: 20px 0 24px; }
+  .card--role { gap: 20px; }
+  .card--info { padding: 28px 24px; gap: 16px; }
+  .split__media--phones { width: min(520px, 100%); }
+  .cta__phones-wrap { width: min(600px, 100%); }
+}
+
+@media (max-width: 760px) {
 
   .btn { min-width: 0; flex: 1 1 200px; }
   .hero__actions { gap: 16px; width: 100%; }
